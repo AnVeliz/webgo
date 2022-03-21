@@ -17,4 +17,5 @@
 # Some assets
 assets/chromium/*
 
+# gitkeep
 !*/**/.gitkeep
