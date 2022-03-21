@@ -8,3 +8,5 @@ Put chromium unpacked archive to **assets** so that the chromium executable woul
 Run **go generate ./...**
 
 Run **go build**
+
+![chrome_Le523Vz57m](https://user-images.githubusercontent.com/72680690/159305077-f7887c24-7f37-485a-a115-0378437ac206.gif)
