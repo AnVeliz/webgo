@@ -40,12 +40,12 @@ func checkConnection(url string, timeout time.Duration, maxAttemptsNum int) bool
 	index := 0
 	for resp, err := httpClient.Get(url); err != nil || resp.StatusCode != http.StatusOK; index++ {
 		if index == maxAttemptsNum-1 {
-			fmt.Printf("can not establish connection error: %s", err)
+			fmt.Printf("can not establish connection error: %s\n", err)
 			return false
 		}
 		time.Sleep(timeout)
 	}
-	fmt.Printf("connected after %d attempt", index+1)
+	fmt.Printf("connected after %d attempt\n", index+1)
 
 	return true
 }

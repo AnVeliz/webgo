@@ -58,11 +58,51 @@
     window.addEventListener('selectstart', function(e){ e.preventDefault(); });
   </script>
 
+<script type = "text/javascript">
+  function ConnectToBackendWebSocket() {
+     if ("WebSocket" in window) {
+        //alert("WebSocket is supported by your Browser!");
+        // Let us open a web socket
+        var ws = new WebSocket("ws://localhost:8089/");
+        window["App"] = {}
+        window["App"].websocket = ws
+
+        ws.onopen = function() {
+           // Web Socket is connected, send data using send()
+           //ws.send("Message to send");
+           //alert("Message is sent...");
+           console.log("websocket connected")
+        };
+
+        ws.onmessage = function (evt) {
+          console.log("message received")
+          const element = document.getElementById("helloworldtxt")
+          if (!element) {
+            return
+          }
+          var received_msg = evt.data;
+          element.innerText = received_msg
+          //alert("Message is received..." + received_msg);
+        };
+
+        ws.onclose = function() {
+           // websocket is closed.
+           alert("Connection is closed...");
+           console.log("websocket disconnected")
+        };
+     } else {
+        // The browser doesn't support WebSocket
+        alert("WebSocket is NOT supported by your Browser!");
+     }
+  }
+  ConnectToBackendWebSocket()
+</script>
+
 </head>
 
 <body>
   <!-- your content here... -->
-  <h1>Hello World</h1>
+  <h1 id="helloworldtxt">Hello World</h1>
   <input type="text">
   <textarea>Hmmmmm...</textarea>
 </body>

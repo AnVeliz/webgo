@@ -5,8 +5,10 @@ import (
 	"embed"
 	"fmt"
 
+	"github.com/AnVeliz/webgo/internal/app"
 	"github.com/AnVeliz/webgo/internal/chromium"
 	"github.com/AnVeliz/webgo/internal/httpsrv"
+	"github.com/AnVeliz/webgo/internal/wssrv"
 )
 
 var (
@@ -16,15 +18,30 @@ var (
 
 func main() {
 	baseUrl := "http://localhost"
-	port := 8088
-	address := fmt.Sprintf("%s:%d/", baseUrl, port)
+	httpPort := 8088
+	wsPort := 8089
 
-	srv := httpsrv.Create(port, embeddedContent)
-
+	mainWsSrv, writeToSocket, _ := wssrv.Create(wsPort)
 	go func() {
-		chromium.Run(address)
-		srv.Shutdown(context.Background())
+		wssrv.Run(mainWsSrv)
+	}()
+	go func() {
+		timerChan := app.RunTimerAsync()
+		for {
+			currentTime := <-timerChan
+			writeToSocket <- []byte(currentTime.String())
+		}
 	}()
 
-	httpsrv.Run(srv)
+	mainHttpSrv := httpsrv.Create(httpPort, embeddedContent)
+
+	go func() {
+		chromium.Run(fmt.Sprintf("%s:%d/", baseUrl, httpPort))
+
+		ctx := context.Background()
+		mainHttpSrv.Shutdown(ctx)
+		mainWsSrv.Shutdown(ctx)
+	}()
+
+	httpsrv.Run(mainHttpSrv)
 }
