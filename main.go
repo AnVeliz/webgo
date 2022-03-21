@@ -19,14 +19,14 @@ import (
 
 var (
 	//go:embed assets/*
-	chromiumEmbeddedFiles embed.FS
+	embeddedContent embed.FS
 )
 
 func main() {
-	http.FileServer(http.FS(chromiumEmbeddedFiles))
+	http.FileServer(http.FS(embeddedContent))
 	log.Println("file server has started...")
 
-	http.Handle("/", http.FileServer(http.FS(chromiumEmbeddedFiles)))
+	http.Handle("/", http.FileServer(http.FS(embeddedContent)))
 	log.Println("main file server handler has been setted up")
 
 	baseUrl := "http://localhost"
