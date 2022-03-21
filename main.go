@@ -3,38 +3,91 @@ package main
 import (
 	"embed"
 	"fmt"
+	"io"
+	"io/fs"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
+	"os"
 	"os/exec"
+	"path"
+	"time"
+
+	"github.com/AnVeliz/webgo/internal/chromium"
 )
 
 var (
-	//go:embed webui/my-new-app/out/my-new-app-win32-x64/*
-	res embed.FS
+	//go:embed assets/*
+	chromiumEmbeddedFiles embed.FS
 )
 
 func main() {
-	http.FileServer(http.FS(res))
-	log.Println("server started...")
+	http.FileServer(http.FS(chromiumEmbeddedFiles))
+	log.Println("file server has started...")
 
-	/*http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/html")
-		w.WriteHeader(http.StatusOK)
-		w.Write(res)
-	})*/
-	http.Handle("/", http.FileServer(http.FS(res)))
+	http.Handle("/", http.FileServer(http.FS(chromiumEmbeddedFiles)))
+	log.Println("main file server handler has been setted up")
+
+	baseUrl := "http://localhost"
+	port := 8088
 
 	go func() {
-		cmnd := exec.Command("http://localhost:8088/webui/my-new-app/out/my-new-app-win32-x64/my-new-app.exe", "")
-		//cmnd.Run() // and wait
-		err := cmnd.Start()
-		if err != nil {
-			fmt.Println(err)
+		time.Sleep(time.Duration(1 * time.Second))
+		chromiumTmpDir := createTemporaryChromium()
+		defer os.RemoveAll(chromiumTmpDir)
+
+		for _, file := range chromium.Files {
+			downloadFile(chromiumTmpDir, fmt.Sprintf("%s:%d/%s", baseUrl, port, file))
 		}
+
+		appRootFile := fmt.Sprintf("%s:%d/%s", baseUrl, port, "assets/webui/index.html")
+		cmd := exec.Command(path.Join(chromiumTmpDir, "assets/chromium/99.0.4844.74_x64/Chrome-bin/chrome.exe"), fmt.Sprintf("--app=%s", appRootFile))
+		cmd.Run()
 	}()
 
-	err := http.ListenAndServe(":8088", nil)
+	err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 	if err != nil {
 		panic(err)
 	}
+}
+
+func createTemporaryChromium() string {
+	chromiumDir, err := ioutil.TempDir("", "chromium")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return chromiumDir
+}
+
+func downloadFile(rootDir, urlStr string) error {
+	resp, err := http.Get(urlStr)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	urlValue, err := url.Parse(urlStr)
+	if err != nil {
+		return err
+	}
+
+	fileName := path.Join(rootDir, urlValue.Path)
+	out, err := createFile(fileName)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, resp.Body)
+	return err
+}
+
+func createFile(p string) (*os.File, error) {
+	dirPath := path.Dir(p)
+	if err := os.MkdirAll(dirPath, fs.ModeDir); err != nil {
+		return nil, err
+	}
+	return os.Create(p)
 }
