@@ -4,6 +4,7 @@ import (
 	"context"
 	"embed"
 	"fmt"
+	"time"
 
 	"github.com/AnVeliz/webgo/internal/app"
 	"github.com/AnVeliz/webgo/internal/chromium"
@@ -29,7 +30,7 @@ func main() {
 		timerChan := app.RunTimerAsync()
 		for {
 			currentTime := <-timerChan
-			writeToSocket <- []byte(currentTime.String())
+			writeToSocket <- []byte(currentTime.Format(time.RFC3339))
 		}
 	}()
 

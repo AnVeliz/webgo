@@ -81,7 +81,7 @@
             return
           }
           var received_msg = evt.data;
-          element.innerText = received_msg
+          element.innerText = (new Date(received_msg)).toLocaleTimeString()
           //alert("Message is received..." + received_msg);
         };
 
