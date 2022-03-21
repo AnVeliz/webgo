@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"embed"
 	"fmt"
 	"io"
@@ -23,14 +24,15 @@ var (
 )
 
 func main() {
-	http.FileServer(http.FS(embeddedContent))
-	log.Println("file server has started...")
-
-	http.Handle("/", http.FileServer(http.FS(embeddedContent)))
-	log.Println("main file server handler has been setted up")
-
 	baseUrl := "http://localhost"
 	port := 8088
+	address := fmt.Sprintf("%s:%d/", baseUrl, port)
+
+	mux := http.NewServeMux()
+	srv := &http.Server{Addr: fmt.Sprintf(":%d", port), Handler: mux}
+
+	mux.Handle("/", http.FileServer(http.FS(embeddedContent)))
+	log.Println("main file server handler has set up")
 
 	go func() {
 		time.Sleep(time.Duration(1 * time.Second))
@@ -38,18 +40,20 @@ func main() {
 		defer os.RemoveAll(chromiumTmpDir)
 
 		for _, file := range chromium.Files {
-			downloadFile(chromiumTmpDir, fmt.Sprintf("%s:%d/%s", baseUrl, port, file))
+			downloadFile(chromiumTmpDir, fmt.Sprintf("%s%s", address, file))
 		}
 
-		appRootFile := fmt.Sprintf("%s:%d/%s", baseUrl, port, "assets/webui/index.html")
+		appRootFile := fmt.Sprintf("%s%s", address, "assets/webui/index.html")
 		cmd := exec.Command(path.Join(chromiumTmpDir, "assets/chromium/99.0.4844.74_x64/Chrome-bin/chrome.exe"), fmt.Sprintf("--app=%s", appRootFile))
 		cmd.Run()
+		srv.Shutdown(context.Background())
 	}()
 
-	err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
-	if err != nil {
+	err := srv.ListenAndServe()
+	if err != nil && err != http.ErrServerClosed {
 		panic(err)
 	}
+	fmt.Println("main file server handler has stopped")
 }
 
 func createTemporaryChromium() string {
