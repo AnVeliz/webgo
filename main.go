@@ -24,12 +24,8 @@ var (
 
 func main() {
 	var wg sync.WaitGroup
-	ctx := context.Background()
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
-	done := make(chan os.Signal, 1)
-	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
 
 	app.StayAwakeAsync(ctx, &wg)
 
@@ -41,7 +37,7 @@ func main() {
 	runMainAppAsync(ctx, &wg, writeToSocket)
 	mainHttpSrv := runHttpServerAsync(&wg, httpPort)
 
-	runChromiumAsync(ctx, cancel, &wg, baseUrl, httpPort, mainHttpSrv, mainWsSrv)
+	runChromiumAsync(ctx, stop, &wg, baseUrl, httpPort, mainHttpSrv, mainWsSrv)
 
 	fmt.Println("the app is running")
 	wg.Wait()
@@ -58,14 +54,14 @@ func runHttpServerAsync(wg *sync.WaitGroup, httpPort int) *http.Server {
 	return mainHttpSrv
 }
 
-func runChromiumAsync(ctx context.Context, cancel context.CancelFunc, wg *sync.WaitGroup, baseUrl string, httpPort int, mainHttpSrv *http.Server, mainWsSrv *http.Server) {
+func runChromiumAsync(ctx context.Context, stop context.CancelFunc, wg *sync.WaitGroup, baseUrl string, httpPort int, mainHttpSrv *http.Server, mainWsSrv *http.Server) {
 	wg.Add(1)
 	go func() {
 		chromium.Run(fmt.Sprintf("%s:%d/", baseUrl, httpPort))
 
 		mainHttpSrv.Shutdown(ctx)
 		mainWsSrv.Shutdown(ctx)
-		cancel()
+		stop()
 		wg.Done()
 	}()
 }
