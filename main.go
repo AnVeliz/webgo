@@ -18,6 +18,8 @@ var (
 )
 
 func main() {
+	app.StayAwakeAsync()
+
 	baseUrl := "http://localhost"
 	httpPort := 8088
 	wsPort := 8089
