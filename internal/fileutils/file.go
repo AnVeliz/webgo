@@ -1,35 +1,30 @@
 package fileutils
 
 import (
-	"io"
+	"embed"
 	"io/fs"
-	"net/http"
-	"net/url"
 	"os"
 	"path"
 )
 
-func Download(rootDir, urlStr string) error {
-	resp, err := http.Get(urlStr)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	urlValue, err := url.Parse(urlStr)
+func Save(outDir, filePath string, fs embed.FS) error {
+	data, err := fs.ReadFile(filePath)
 	if err != nil {
 		return err
 	}
 
-	fileName := path.Join(rootDir, urlValue.Path)
-	out, err := CreateLocal(fileName)
+	out, err := CreateLocal(path.Join(outDir, filePath))
 	if err != nil {
 		return err
 	}
 	defer out.Close()
 
-	_, err = io.Copy(out, resp.Body)
-	return err
+	_, err = out.Write(data)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func CreateLocal(p string) (*os.File, error) {

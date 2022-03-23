@@ -1,6 +1,7 @@
 package chromium
 
 import (
+	"embed"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -14,12 +15,12 @@ import (
 	"github.com/AnVeliz/webgo/internal/fileutils"
 )
 
-func Run(url string) {
-	runChromium(url)
+func Run(url string, fs embed.FS) {
+	runChromium(url, fs)
 }
 
-func runChromium(url string) error {
-	cmd, chromiumTmpDir := prepareChromiumCmd(url)
+func runChromium(url string, fs embed.FS) error {
+	cmd, chromiumTmpDir := prepareChromiumCmd(url, fs)
 	defer os.RemoveAll(chromiumTmpDir)
 
 	if !checkConnection(url, time.Duration(1*time.Second), 5) {
@@ -50,14 +51,14 @@ func checkConnection(url string, timeout time.Duration, maxAttemptsNum int) bool
 	return true
 }
 
-func prepareChromiumCmd(address string) (*exec.Cmd, string) {
+func prepareChromiumCmd(address string, fs embed.FS) (*exec.Cmd, string) {
 	chromiumTmpDir := createTemporaryChromium()
 
 	for _, file := range Files {
-		fileutils.Download(chromiumTmpDir, fmt.Sprintf("%s%s", address, file))
+		fileutils.Save(chromiumTmpDir, file, fs)
 	}
 
-	appRootFile := fmt.Sprintf("%s%s", address, "assets/webui/index.html")
+	appRootFile := fmt.Sprintf("%s%s", address, "index.html")
 	cmd := exec.Command(path.Join(chromiumTmpDir, "assets/chromium/99.0.4844.74_x64/Chrome-bin/chrome.exe"), fmt.Sprintf("--app=%s", appRootFile))
 	return cmd, chromiumTmpDir
 }

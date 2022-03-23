@@ -19,7 +19,7 @@ import (
 
 var (
 	//go:embed assets/*
-	embeddedContent embed.FS
+	embeddedContentFS embed.FS
 )
 
 func main() {
@@ -45,7 +45,7 @@ func main() {
 }
 
 func runHttpServerAsync(wg *sync.WaitGroup, httpPort int) *http.Server {
-	mainHttpSrv := httpsrv.Create(httpPort, embeddedContent)
+	mainHttpSrv := httpsrv.Create(httpPort, embeddedContentFS)
 	wg.Add(1)
 	go func() {
 		httpsrv.Run(mainHttpSrv)
@@ -57,7 +57,7 @@ func runHttpServerAsync(wg *sync.WaitGroup, httpPort int) *http.Server {
 func runChromiumAsync(ctx context.Context, stop context.CancelFunc, wg *sync.WaitGroup, baseUrl string, httpPort int, mainHttpSrv *http.Server, mainWsSrv *http.Server) {
 	wg.Add(1)
 	go func() {
-		chromium.Run(fmt.Sprintf("%s:%d/", baseUrl, httpPort))
+		chromium.Run(fmt.Sprintf("%s:%d/", baseUrl, httpPort), embeddedContentFS)
 
 		mainHttpSrv.Shutdown(ctx)
 		mainWsSrv.Shutdown(ctx)
