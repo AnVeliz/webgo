@@ -11,6 +11,6 @@ Run **npm install** from **web-ui** folder
 
 Run **npm run dist** from **web-ui** folder
 
-Run **go build**
+Run **go build** if you want to build with console debug window or run **go build -ldflags -H=windowsgui** if you want to get clean GUI app without the console window
 
 ![chrome_Le523Vz57m](https://user-images.githubusercontent.com/72680690/159305077-f7887c24-7f37-485a-a115-0378437ac206.gif)
