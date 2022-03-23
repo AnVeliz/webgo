@@ -3,12 +3,13 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "clean": "rimraf assets/web-ui-public-build/dist/public/*",
+    "clean": "rimraf ../assets/web-ui-public-build/public/*",
+    "clean-maps": "rimraf ../assets/web-ui-public-build/public/**/*.map",
     "build": "rollup -c",
     "dev": "rollup -c -w",
     "start": "sirv public --no-clear",
     "check": "svelte-check --tsconfig ./tsconfig.json",
-    "dist": "npm run clean && npm run build && copyfiles --all --verbose ./public/**/* ../assets/web-ui-public-build/"
+    "dist": "npm run clean && npm run build && copyfiles --all --verbose ./public/**/* ../assets/web-ui-public-build/ && npm run clean-maps"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^17.0.0",

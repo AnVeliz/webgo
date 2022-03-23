@@ -58,6 +58,7 @@
         }
         var received_msg = evt.data;
         element.innerText = new Date(received_msg).toLocaleTimeString();
+
         //alert("Message is received..." + received_msg);
       };
 
@@ -81,7 +82,7 @@
 
 <main>
   <div class="sign">
-    <span class="fast-flicker" id="helloworldtxt" />
+    <span class="fast-flicker" id="helloworldtxt">Hello!</span>
   </div>
 </main>
 
@@ -90,17 +91,6 @@
     font-family: Clip;
     src: url("https://acupoftee.github.io/fonts/Clip.ttf");
   }
-
-  body {
-    background-color: #141114;
-    background-image: linear-gradient(335deg, black 23px, transparent 23px),
-      linear-gradient(155deg, black 23px, transparent 23px),
-      linear-gradient(335deg, black 23px, transparent 23px),
-      linear-gradient(155deg, black 23px, transparent 23px);
-    background-size: 58px 58px;
-    background-position: 0px 2px, 4px 35px, 29px 31px, 34px 6px;
-  }
-
   .sign {
     position: absolute;
     display: flex;
