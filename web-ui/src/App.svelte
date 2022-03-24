@@ -1,22 +1,14 @@
 <script lang="ts">
-  import { DisableDevTools } from "./ui-services/dev-tools";
-  DisableDevTools();
+  export let timeText: string;
 
-  import { ConnectToBackendWebSocket } from "./services/backend/connector";
-  ConnectToBackendWebSocket((msg: string) => {
-    console.log("message received");
-    const element = document.getElementById("helloworldtxt");
-    if (!element) {
-      return;
-    }
-    var received_msg = msg;
-    element.innerText = new Date(received_msg).toLocaleTimeString();
-  });
+  //import { DisableDevTools } from "./ui-services/dev-tools";
+  //DisableDevTools();
+
 </script>
 
 <main>
   <div class="sign">
-    <span class="fast-flicker" id="helloworldtxt">Hello!</span>
+    <span class="fast-flicker">{timeText}</span>
   </div>
 </main>
 
