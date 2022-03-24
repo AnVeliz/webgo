@@ -1,8 +1,8 @@
 <script lang="ts">
   export let timeText: string;
 
-  //import { DisableDevTools } from "./ui-services/dev-tools";
-  //DisableDevTools();
+  import { DisableDevTools } from "./ui-services/dev-tools";
+  DisableDevTools();
 
 </script>
 
