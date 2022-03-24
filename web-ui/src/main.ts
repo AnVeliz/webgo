@@ -9,7 +9,7 @@ const app = new App({
 });
 
 ConnectToBackendWebSocket((msg: string) => {
-	app.$set({timeText: new Date(msg).toLocaleTimeString()});
+	app.$set({ timeText: new Date(msg).toLocaleTimeString() });
 });
 
 export default app;
