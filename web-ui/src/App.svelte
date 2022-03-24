@@ -1,83 +1,17 @@
 <script lang="ts">
-  // Forbid DevTools
-  window.addEventListener("keydown", function (event) {
-    if (event.keyCode == 116) {
-      // block F5 (Refresh)
-      event.preventDefault();
-      event.stopPropagation();
-      return false;
-    } else if (event.keyCode == 122) {
-      // block F11 (Fullscreen)
-      event.preventDefault();
-      event.stopPropagation();
-      return false;
-    } else if (event.keyCode == 123) {
-      // block F12 (DevTools)
-      event.preventDefault();
-      event.stopPropagation();
-      return false;
-    } else if (event.ctrlKey && event.shiftKey && event.keyCode == 73) {
-      // block Strg+Shift+I (DevTools)
-      event.preventDefault();
-      event.stopPropagation();
-      return false;
-    } else if (event.ctrlKey && event.shiftKey && event.keyCode == 74) {
-      // block Strg+Shift+J (Console)
-      event.preventDefault();
-      event.stopPropagation();
-      return false;
+  import { DisableDevTools } from "./ui-services/dev-tools";
+  DisableDevTools();
+
+  import { ConnectToBackendWebSocket } from "./services/backend/connector";
+  ConnectToBackendWebSocket((msg: string) => {
+    console.log("message received");
+    const element = document.getElementById("helloworldtxt");
+    if (!element) {
+      return;
     }
+    var received_msg = msg;
+    element.innerText = new Date(received_msg).toLocaleTimeString();
   });
-
-  window.addEventListener("contextmenu", (e) => e.preventDefault());
-  window.addEventListener("selectstart", function (e) {
-    e.preventDefault();
-  });
-
-  // Backend connection
-  function ConnectToBackendWebSocket() {
-    if ("WebSocket" in window) {
-      //alert("WebSocket is supported by your Browser!");
-      // Let us open a web socket
-      var ws = new WebSocket("ws://localhost:8089/");
-      window["App"] = {};
-      window["App"].websocket = ws;
-
-      ws.onopen = function () {
-        // Web Socket is connected, send data using send()
-        //ws.send("Message to send");
-        //alert("Message is sent...");
-        console.log("websocket connected");
-      };
-
-      ws.onmessage = function (evt) {
-        console.log("message received");
-        const element = document.getElementById("helloworldtxt");
-        if (!element) {
-          return;
-        }
-        var received_msg = evt.data;
-        element.innerText = new Date(received_msg).toLocaleTimeString();
-
-        //alert("Message is received..." + received_msg);
-      };
-
-      ws.onclose = function () {
-        // websocket is closed.
-        //alert("Connection is closed...");
-        window.close();
-        console.log("websocket disconnected");
-      };
-
-      ws.onerror = function () {
-        window.close();
-      };
-    } else {
-      // The browser doesn't support WebSocket
-      alert("WebSocket is NOT supported by your Browser!");
-    }
-  }
-  ConnectToBackendWebSocket();
 </script>
 
 <main>
@@ -137,10 +71,6 @@
       color: #ff2483;
       text-shadow: none;
     }
-  }
-
-  .flicker {
-    animation: shine 2s forwards, blink 3s 2s infinite;
   }
 
   .fast-flicker {
